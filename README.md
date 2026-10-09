@@ -2,6 +2,8 @@
 
 Windows 桌面查询工具，资料来自星露谷物语官方中文 Wiki，界面采用像素风山景、木质边框和羊皮纸面板。
 
+普通使用者请在本仓库的 **Releases** 页面下载安装包；克隆源码用于开发时，按下方开发步骤运行。更新流程和目录说明见 [开发与更新](CONTRIBUTING.md)，历史变化见 [更新记录](CHANGELOG.md)。
+
 ## 运行
 
 推荐安装版：双击 `dist/Stardew-Handbook-1.0.2-Setup-Windows-x64.exe`，按照中文向导安装，之后从桌面或开始菜单打开「星露谷手册」。适用于 Windows 10/11 的 x64 电脑。
@@ -53,6 +55,7 @@ npm run bootstrap
 npm run build
 npm run build:installer
 npm run build:portable
+npm run release:prepare
 ```
 
 需要 Node.js 24+。`bootstrap` 从官方 Wiki 下载标题索引、基础词条和图像，保留来源清单；不要无意义地频繁运行。依赖安装须允许 Electron 下载其运行时。`build` 同时生成安装版与便携版，两个单独命令可按需构建。

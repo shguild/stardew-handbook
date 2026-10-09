@@ -3,3 +3,11 @@ dist/
 test-output/
 *.log
 user-data/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.tools/
+.DS_Store
+Thumbs.db

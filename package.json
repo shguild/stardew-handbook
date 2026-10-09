@@ -14,7 +14,8 @@
     "build": "electron-builder --win nsis portable --x64",
     "build:installer": "electron-builder --win nsis --x64",
     "build:portable": "electron-builder --win portable --x64",
-    "build:dir": "electron-builder --win --dir --x64"
+    "build:dir": "electron-builder --win --dir --x64",
+    "release:prepare": "node scripts/prepare-release.cjs"
   },
   "dependencies": {
     "sanitize-html": "2.18.0"

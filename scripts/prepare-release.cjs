@@ -1,0 +1,30 @@
+const fs=require('node:fs/promises');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const {execFileSync}=require('node:child_process');
+const root=path.join(__dirname,'..');
+const out=path.join(root,'dist');
+const version=require('../package.json').version;
+(async()=>{
+  if(!/^\d+\.\d+\.\d+$/.test(version))throw Error('Release requires a stable numeric package version.');
+  if(execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim())throw Error('Commit source changes before preparing a release.');
+  const committed=JSON.parse(execFileSync('git',['show','HEAD:package.json'],{cwd:root,encoding:'utf8'}));
+  if(committed.version!==version)throw Error('Committed package version differs.');
+  const binaries=[`Stardew-Handbook-${version}-Setup-Windows-x64.exe`,`Stardew-Handbook-${version}-Windows-x64.exe`];
+  for(const name of binaries)if((await fs.stat(path.join(out,name))).size<1024*1024)throw Error('Missing or incomplete binary: '+name);
+  const sourceName=`Stardew-Handbook-${version}-Source.zip`;
+  execFileSync('git',['archive','--format=zip','--prefix=stardew-handbook/','--output='+path.join(out,sourceName),'HEAD'],{cwd:root});
+  let guide=await fs.readFile(path.join(root,'docs','安装与分享说明.txt'),'utf8');
+  const guideVersion=guide.match(/星露谷手册 (\d+\.\d+\.\d+)/)?.[1];if(!guideVersion)throw Error('Share guide version missing.');
+  guide=guide.replaceAll(guideVersion,version);const guideName=`安装与分享说明-${version}.txt`;await fs.writeFile(path.join(out,guideName),guide);
+  const names=[...binaries,sourceName,guideName];const files=[];
+  for(const name of names){const bytes=await fs.readFile(path.join(out,name));files.push({path:'dist/'+name,name,size:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}
+  const checksumName=`SHA256SUMS-${version}.txt`;const checksums=files.map(f=>f.sha256.toUpperCase()+'  '+f.name).join('\n')+'\n';await fs.writeFile(path.join(out,checksumName),checksums);
+  files.push({path:'dist/'+checksumName,name:checksumName,size:Buffer.byteLength(checksums),sha256:crypto.createHash('sha256').update(checksums).digest('hex')});
+  const changelog=await fs.readFile(path.join(root,'CHANGELOG.md'),'utf8');const heading='## '+version+' —';const section=changelog.split(heading)[1];if(!section)throw Error('Add this version to CHANGELOG.md.');
+  const changes=section.split('\n').slice(1).join('\n').split('\n## ')[0].trim();
+  const notes=`# 星露谷手册 ${version}\n\n${changes}\n\n下载 **${binaries[0]}** 后按中文向导安装；适用于 Windows 10/11 x64，无需额外运行环境。便携版为 **${binaries[1]}**。\n\n首次访问未缓存词条需要联网。安装包尚未签名，Windows 可能显示未知发布者提示。Wiki 文本按 CC BY-NC-SA 3.0 提供，代码为 MIT；游戏图片见第三方声明。\n\nSHA256 校验值见 **${checksumName}**。\n`;
+  await fs.writeFile(path.join(out,`release-notes-${version}.md`),notes);
+  await fs.writeFile(path.join(out,`release-manifest-${version}.json`),JSON.stringify({version,tag:'v'+version,files},null,2));
+  console.log('Prepared '+files.length+' release assets for v'+version);
+})().catch(error=>{console.error(error.message);process.exitCode=1});

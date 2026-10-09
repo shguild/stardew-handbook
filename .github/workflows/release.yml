@@ -1,0 +1,61 @@
+name: Windows release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check tag matches package version
+        run: node -e "if(process.env.GITHUB_REF_NAME !== 'v'+require('./package.json').version) throw Error('Tag and package version differ')"
+      - run: npm ci
+      - run: npm test
+      - name: Build installer and portable application
+        run: npm run build -- --publish never
+      - name: Verify installer and reinstall
+        shell: pwsh
+        run: ./scripts/installer-smoke.ps1
+      - name: Verify old article caches
+        run: node scripts/articles-smoke.cjs --packaged
+      - name: Verify portable application
+        run: node scripts/portable-smoke.cjs
+      - name: Prepare source archive, checksums and release notes
+        run: npm run release:prepare
+      - name: Save verified build artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: windows-${{ github.ref_name }}
+          compression-level: 0
+          if-no-files-found: error
+          path: |
+            dist/*.exe
+            dist/*-Source.zip
+            dist/SHA256SUMS-*.txt
+            dist/安装与分享说明-*.txt
+            test-output/*smoke.json
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $manifest = Get-Content "dist/release-manifest-$version.json" -Raw | ConvertFrom-Json
+          $assets = @($manifest.files | ForEach-Object { $_.path })
+          gh release create "v$version" @assets --repo $env:GITHUB_REPOSITORY --verify-tag --title "星露谷手册 $version" --notes-file "dist/release-notes-$version.md"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
