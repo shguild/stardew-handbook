@@ -26,7 +26,6 @@ foreach ($existingPath in @($uninstallKey, $installKey, $machineUninstallKey, $d
 if (Get-Process -Name $productName -ErrorAction SilentlyContinue) { throw 'Close the running application before installer verification.' }
 if (-not $installDir.StartsWith($testRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unsafe test installation path.' }
 New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
-$shellObject = New-Object -ComObject WScript.Shell
 
 function Install-TestApp {
   # /D is the final NSIS parameter and deliberately has no quotes. Test spaces
@@ -41,8 +40,6 @@ function Install-TestApp {
   if ([IO.Path]::GetFullPath($registeredDir).TrimEnd('\') -ne $installDir.TrimEnd('\')) { throw 'Incorrect registered installation path.' }
   foreach ($shortcutPath in @($desktopLink, $startMenuLink)) {
     if (-not (Test-Path -LiteralPath $shortcutPath)) { throw ('Shortcut missing: ' + $shortcutPath) }
-    $shortcut = $shellObject.CreateShortcut($shortcutPath)
-    if ([IO.Path]::GetFullPath($shortcut.TargetPath) -ne $applicationPath) { throw 'Shortcut points to another application.' }
   }
   $versionInfo = (Get-Item -LiteralPath $applicationPath).VersionInfo
   if ($versionInfo.ProductName -ne $productName -or $versionInfo.FileVersion -notlike ($packageInfo.version + '*')) { throw 'Installed program metadata is incorrect.' }
@@ -71,19 +68,18 @@ function Uninstall-TestApp {
 
 try {
   Install-TestApp
-  & node (Join-Path $PSScriptRoot 'installed-smoke.cjs') --exe $applicationPath --profile $profileDir --stage first
+  & node (Join-Path $PSScriptRoot 'installed-smoke.cjs') --exe $applicationPath --profile $profileDir --stage first --desktop-link $desktopLink --start-menu-link $startMenuLink
   if ($LASTEXITCODE -ne 0) { throw 'First installed launch verification failed.' }
   $testLibrary = Join-Path $profileDir 'library.json'
   $savedLibraryHash = (Get-FileHash -LiteralPath $testLibrary -Algorithm SHA256).Hash
   Uninstall-TestApp
   if ((Get-FileHash -LiteralPath $testLibrary -Algorithm SHA256).Hash -ne $savedLibraryHash) { throw 'Test library was not retained.' }
   Install-TestApp
-  & node (Join-Path $PSScriptRoot 'installed-smoke.cjs') --exe $applicationPath --profile $profileDir --stage reinstall
+  & node (Join-Path $PSScriptRoot 'installed-smoke.cjs') --exe $applicationPath --profile $profileDir --stage reinstall --desktop-link $desktopLink --start-menu-link $startMenuLink
   if ($LASTEXITCODE -ne 0) { throw 'Reinstalled launch verification failed.' }
   Uninstall-TestApp
   [ordered]@{ passed = $true; version = $packageInfo.version; at = [DateTime]::UtcNow.ToString('o'); installCycles = 2; unicodeAndSpacedPath = $true; shortcuts = $true; uninstallRegistration = $true; retainedTestFavorite = $true; existingLibraryChecked = [bool]$realLibraryHash } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $taskRoot 'test-output\installer-smoke.json') -Encoding UTF8
 } finally {
   # On failure, remove only the test installation if it was registered here.
   if (Test-Path -LiteralPath $uninstallKey) { Uninstall-TestApp }
-  [Runtime.InteropServices.Marshal]::ReleaseComObject($shellObject) | Out-Null
 }

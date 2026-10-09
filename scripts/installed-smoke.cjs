@@ -10,6 +10,14 @@ function arg(name){const i=process.argv.indexOf(name);assert.ok(i>=0&&process.ar
   const app=await electron.launch({executablePath,args:[],env,timeout:30000});
   try{
     const win=await app.firstWindow();const errors=[];win.on('pageerror',e=>errors.push(e.message));await expect(win.locator('.category-card')).toHaveCount(9);
+    // Read Unicode .lnk files with Electron's native ShellLink API. WScript's
+    // automation wrapper can return an empty target on hosted Windows runners.
+    for(const name of ['--desktop-link','--start-menu-link']){
+      const shortcutPath=arg(name);const details=await app.evaluate(({shell},file)=>shell.readShortcutLink(file),shortcutPath);
+      assert.ok(details.target,'Shortcut has a target: '+shortcutPath);
+      assert.equal(path.resolve(details.target).toLowerCase(),path.resolve(executablePath).toLowerCase(),'Shortcut targets the installed executable');
+    }
+    console.log('PASS: native desktop and start menu shortcut targets');
     const metadata=await win.evaluate(()=>window.handbook.init());assert.equal(metadata.ok,true);assert.equal(metadata.value.version,require('../package.json').version);assert.equal(metadata.value.bundledCount,16);
     if(stage==='reinstall')assert.ok(metadata.value.state.favorites.some(p=>p.title==='鱼'),'favorite retained after uninstall and reinstall');
     await win.locator('#search-input').fill('鱼');await win.locator('#suggestions button[data-title="鱼"]').click();await expect(win.locator('.article-heading h1')).toHaveText('鱼');
