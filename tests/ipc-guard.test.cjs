@@ -1,0 +1,21 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {EventEmitter}=require('node:events');
+const {createPageGuard}=require('../src/ipc-guard.cjs');
+test('IPC accepts the committed Windows short path but rejects foreign windows, subframes and later documents',()=>{
+  const contents=new EventEmitter();contents.mainFrame={processId:20,routingId:1};
+  const longUrl='file:///C:/Users/runneradmin/AppData/Local/Temp/app/resources/app.asar/src/index.html';
+  const shortUrl='file:///C:/Users/RUNNER~1/AppData/Local/Temp/app/resources/app.asar/src/index.html';
+  const guard=createPageGuard(contents,longUrl);
+  const event={sender:contents,senderFrame:{...contents.mainFrame,url:shortUrl}};
+  assert.equal(guard.isTrusted(event),false,'initial blank document has no privileges');
+  contents.emit('did-navigate',{},shortUrl);assert.equal(guard.isTrusted(event),true);
+  assert.equal(guard.canNavigate(shortUrl),true);assert.equal(guard.canNavigate('https://example.com'),false);
+  assert.equal(guard.isTrusted({...event,sender:{}}),false);
+  assert.equal(guard.isTrusted({...event,senderFrame:{...event.senderFrame,routingId:2}}),false);
+  assert.equal(guard.isTrusted({...event,senderFrame:{...event.senderFrame,processId:21}}),false);
+  assert.equal(guard.isTrusted({...event,senderFrame:{...event.senderFrame,url:longUrl}}),false);
+  assert.equal(guard.isTrusted({...event,senderFrame:null}),false);
+  contents.emit('did-navigate',{},'file:///C:/other/index.html');
+  assert.equal(guard.isTrusted({...event,senderFrame:{...event.senderFrame,url:'file:///C:/other/index.html'}}),false,'later navigation cannot replace the trusted document');
+});

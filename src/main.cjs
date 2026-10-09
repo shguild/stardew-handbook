@@ -5,6 +5,7 @@ const crypto=require('node:crypto');
 const {pathToFileURL}=require('node:url');
 const {WikiService,isWikiUrl}=require('./wiki.cjs');
 const {Store}=require('./store.cjs');
+const {createPageGuard}=require('./ipc-guard.cjs');
 const catalog=require('./catalog.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'wiki-image',privileges:{secure:true,standard:true,supportFetchAPI:true,bypassCSP:false}}]);
 let mainWindow;
@@ -42,8 +43,9 @@ else {
     });
     if(process.env.HANDBOOK_TEST_OFFLINE==='1') wiki.fetcher=async()=>{throw Error('offline test')};
     const htmlFile=path.join(__dirname,'index.html');const htmlUrl=pathToFileURL(htmlFile).href;
+    let pageGuard;
     function handle(channel,fn){ipcMain.handle(channel,async(event,...args)=>{
-      if(event.senderFrame?.url!==htmlUrl || event.sender!==mainWindow?.webContents) throw Error('请求来源无效。');
+      if(!pageGuard?.isTrusted(event)) throw Error('请求来源无效。');
       try{return {ok:true,value:await fn(...args)}}catch(error){return {ok:false,error:error.message || '操作失败，请重试。'}}
     });}
     handle('init',async()=>({catalog,state:store.snapshot(),indexCount:index.length,version:app.getVersion(),bundledCount:Object.keys(seed).length}));
@@ -63,8 +65,9 @@ else {
     handle('open-source',async url=>{if(!isWikiUrl(url))throw Error('只能打开官方 Wiki 链接。');await shell.openExternal(url);return true;});
     handle('window',action=>{if(action==='minimize')mainWindow.minimize();else if(action==='maximize'){mainWindow.isMaximized()?mainWindow.unmaximize():mainWindow.maximize();}else if(action==='close')mainWindow.close();return true;});
     mainWindow=new BrowserWindow({width:1380,height:920,minWidth:940,minHeight:650,frame:false,show:false,backgroundColor:'#f7e8c6',title:'星露谷手册',icon:path.join(__dirname,'..','assets','app.ico'),autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,backgroundThrottling:process.env.HANDBOOK_TEST_HIDDEN!=='1'}});
+    pageGuard=createPageGuard(mainWindow.webContents,htmlUrl);
     mainWindow.webContents.setWindowOpenHandler(()=>({action:'deny'}));
-    mainWindow.webContents.on('will-navigate',(event,url)=>{if(url!==htmlUrl)event.preventDefault()});
+    mainWindow.webContents.on('will-navigate',(event,url)=>{if(!pageGuard.canNavigate(url))event.preventDefault()});
     mainWindow.once('ready-to-show',()=>{if(process.env.HANDBOOK_TEST_HIDDEN!=='1')mainWindow.show()});
     await mainWindow.loadFile(htmlFile);
   }).catch(error=>{console.error(error);app.quit()});

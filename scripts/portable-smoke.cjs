@@ -10,7 +10,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function freePort(){return new Promise((resolve,reject)=>{const server=net.createServer();server.on('error',reject);server.listen(0,'127.0.0.1',()=>{const port=server.address().port;server.close(()=>resolve(port));});});}
 (async()=>{
   const port=await freePort();const userDir=path.join(root,'test-output','portable-user-'+Date.now());
-  const env={...process.env,HANDBOOK_TEST_DIR:userDir,HANDBOOK_TEST_HIDDEN:'1'};delete env.ELECTRON_RUN_AS_NODE;
+  const env={...process.env,HANDBOOK_TEST_DIR:userDir,HANDBOOK_TEST_HIDDEN:'1',HANDBOOK_TEST_OFFLINE:'1'};delete env.ELECTRON_RUN_AS_NODE;
   const child=spawn(path.join(root,'dist',`Stardew-Handbook-${version}-Windows-x64.exe`),['--remote-debugging-port='+port],{env,windowsHide:true,stdio:'ignore'});
   let spawnError;child.on('error',error=>spawnError=error);let browser,win;const pageErrors=[];
   try{
