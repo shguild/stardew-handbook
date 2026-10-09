@@ -12,6 +12,8 @@ Windows 桌面查询工具，资料来自星露谷物语官方中文 Wiki，界�
 
 ## 功能
 
+![首页预览](docs/previews/home.png)
+
 - 中文标题即时建议、官方 Wiki 全文搜索与分页。
 - 九类百科导航、季节入口、村民头像快捷查询。
 - 词条正文、图片、表格、目录、内部跳转、字号调整和官方原文链接。
@@ -32,6 +34,8 @@ npm ci
 npm start
 npm test
 npm run test:ui
+node scripts/smoke.cjs --packaged
+node scripts/portable-smoke.cjs
 npm run bootstrap
 npm run build
 ```
