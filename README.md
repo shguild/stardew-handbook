@@ -12,7 +12,7 @@ Windows 桌面查询工具，资料来自星露谷物语官方中文 Wiki，界�
 
 ## 功能
 
-1.0.1 修复鱼类价格表中显示 `data-sort-value="…"` 的问题。已清理附带资料，读取旧缓存时也会自动移除排序辅助字段；无需清理缓存，收藏和阅读历史会保留。
+1.0.1 统一修复所有词条中的 `data-sort-value="…"` 排序代码，包括鱼、四季、农作物、果树、旅行货车、星露谷展览会等。已清理附带资料，读取旧缓存时也会自动移除排序辅助字段；无需清理缓存，收藏和阅读历史会保留。
 
 ![首页预览](docs/previews/home.png)
 
@@ -38,6 +38,7 @@ npm test
 npm run test:ui
 node scripts/smoke.cjs --packaged
 node scripts/fish-smoke.cjs --packaged
+node scripts/articles-smoke.cjs --packaged
 node scripts/portable-smoke.cjs
 npm run bootstrap
 npm run build
@@ -46,6 +47,8 @@ npm run build
 需要 Node.js 24+。`bootstrap` 从官方 Wiki 下载标题索引、基础词条和图像，保留来源清单；不要无意义地频繁运行。依赖安装须允许 Electron 下载其运行时。便携版由 electron-builder 生成。
 
 开发者可设置 `HANDBOOK_TEST_DIR` 将测试用户数据隔离到指定目录；`HANDBOOK_TEST_HIDDEN=1` 让自动化测试窗口保持隐藏；`HANDBOOK_TEST_OFFLINE=1` 只用于离线验证。这些变量通常无需设置。
+
+跨词条检查记录见 `docs/ARTICLE_AUDIT.md`。需要重新检查官网正文时，可运行 `electron scripts/audit-articles.cjs`；添加 `--cached` 可复查上次的原始响应，避免重复访问官网。
 
 ## 资料和许可
 

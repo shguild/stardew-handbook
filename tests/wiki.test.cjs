@@ -5,7 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const testRoot=path.join(__dirname,'..','test-output','unit');
 require('node:fs').mkdirSync(testRoot,{recursive:true});
-const {WikiService, sanitizeWiki, isWikiUrl, pageUrl} = require('../src/wiki.cjs');
+const {WikiService, sanitizeWiki, isWikiUrl, pageUrl, plain} = require('../src/wiki.cjs');
 const {Store} = require('../src/store.cjs');
 
 test('external URL allowlist rejects deceptive hosts, credentials and unsafe schemes',()=>{
@@ -36,6 +36,25 @@ test('the real bundled fish article has no visible sorting code after sanitizing
   const seed=require('../data/seed.json');const html=sanitizeWiki(seed['鱼'].html);
   assert.doesNotMatch(html,/<span[^>]*>\s*data-sort-value=/);
   for(const text of ['河豚','太阳鱼','鲶鱼','200金','夏季'])assert.ok(html.includes(text),text+' remains readable');
+});
+test('official samples across 25 affected articles preserve prices, recovery values and item names',()=>{
+  const fixtures=require('./fixtures/wiki-price-tables.json');assert.equal(fixtures.length,25);
+  for(const sample of fixtures){
+    assert.match(sample.html,/data-sort-value=/,sample.title+' reproduces the official helper');
+    assert.match(sample.legacyHtml,/data-sort-value=/,sample.title+' reproduces the old cache');
+    for(const input of [sample.html,sample.legacyHtml]){
+      const html=sanitizeWiki(input);const text=plain(html);
+      assert.doesNotMatch(text,/data-sort-value\s*=/,sample.title+' has no sorting code');
+      for(const value of sample.expected)assert.ok(text.includes(value),sample.title+' preserves '+value);
+    }
+  }
+});
+test('all bundled articles are clean and sanitizing them again is stable',()=>{
+  const seed=require('../data/seed.json');assert.equal(Object.keys(seed).length,16);
+  for(const [title,page] of Object.entries(seed)){
+    const html=sanitizeWiki(page.html);assert.equal(sanitizeWiki(html),html,title+' is stable');
+    assert.doesNotMatch(plain(html),/data-sort-value\s*=|\{\{[^}]+\}\}|\[\[[^\]]+\]\]/,title+' contains no raw helper or template markup');
+  }
 });
 test('failed online request returns cached article with explicit offline status',async t=>{
   const dir=await fs.mkdtemp(path.join(testRoot,'stardew-test-')); t.after(()=>fs.rm(dir,{recursive:true,force:true}));
