@@ -48,6 +48,8 @@ git push origin v1.0.3
 
 `Windows release` 工作流会检查版本、运行测试、构建安装包和便携包、验收安装与重装、验证旧词条缓存，生成源码 ZIP 和 SHA256 校验文件，全部通过后发布 GitHub Release。可在仓库的 Actions 页面查看进度与失败日志。无需上传本机的 `node_modules` 或 `dist` 文件夹。
 
+发布附件使用英文文件名，避免 GitHub 改写中文名称；`Installation-Guide-<版本>.txt` 的内容为中文安装与分享说明。
+
 如果标签版本与 `package.json` 不同，发布会停止。已发布的版本不要覆盖；修复后提高版本并推送新标签。
 
 本机手动准备发布文件时，先提交源码，再运行 `npm run build -- --publish never` 和 `npm run release:prepare`。后一个命令要求工作区干净，产物清单保存在 `dist/release-manifest-<版本>.json`。

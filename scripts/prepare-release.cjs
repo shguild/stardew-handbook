@@ -16,7 +16,7 @@ const version=require('../package.json').version;
   execFileSync('git',['archive','--format=zip','--prefix=stardew-handbook/','--output='+path.join(out,sourceName),'HEAD'],{cwd:root});
   let guide=await fs.readFile(path.join(root,'docs','安装与分享说明.txt'),'utf8');
   const guideVersion=guide.match(/星露谷手册 (\d+\.\d+\.\d+)/)?.[1];if(!guideVersion)throw Error('Share guide version missing.');
-  guide=guide.replaceAll(guideVersion,version);const guideName=`安装与分享说明-${version}.txt`;await fs.writeFile(path.join(out,guideName),guide);
+  guide=guide.replaceAll(guideVersion,version);const guideName=`Installation-Guide-${version}.txt`;await fs.writeFile(path.join(out,guideName),guide);
   const names=[...binaries,sourceName,guideName];const files=[];
   for(const name of names){const bytes=await fs.readFile(path.join(out,name));files.push({path:'dist/'+name,name,size:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}
   const checksumName=`SHA256SUMS-${version}.txt`;const checksums=files.map(f=>f.sha256.toUpperCase()+'  '+f.name).join('\n')+'\n';await fs.writeFile(path.join(out,checksumName),checksums);

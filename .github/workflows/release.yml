@@ -47,7 +47,7 @@ jobs:
             dist/*.exe
             dist/*-Source.zip
             dist/SHA256SUMS-*.txt
-            dist/安装与分享说明-*.txt
+            dist/Installation-Guide-*.txt
             test-output/*smoke.json
       - name: Publish GitHub release
         shell: pwsh
