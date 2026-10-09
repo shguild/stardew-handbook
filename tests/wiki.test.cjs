@@ -20,6 +20,23 @@ test('article sanitizer preserves tables and converts wiki links while removing 
   assert.match(html,/https:\/\/zh.stardewvalleywiki.com\//);
   assert.doesNotMatch(html,/<script|<iframe|onclick|onerror|javascript:|evil\.test/);
 });
+test('fish price sort helpers are removed while the visible prices and normal sort cells remain',()=>{
+  const html=sanitizeWiki('<table><tr><td><span style="display:none">data-sort-value="200"</span><table><tr><td>200金</td></tr><tr><td>250金</td></tr></table></td><td><span data-sort-value="0">0金</span></td></tr></table><p>河豚 · 夏季</p><code>data-sort-value="这是文档示例"</code>');
+  assert.doesNotMatch(html,/<span[^>]*>\s*data-sort-value=/);
+  assert.match(html,/200金/);assert.match(html,/250金/);assert.match(html,/0金/);
+  assert.match(html,/河豚 · 夏季/);assert.match(html,/<code>data-sort-value=/);
+});
+test('legacy cached fish helper spans are cleaned on read without needing a download',async t=>{
+  const dir=await fs.mkdtemp(path.join(testRoot,'stardew-test-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));let requests=0;
+  const service=new WikiService({cacheDir:dir,fetcher:async()=>{requests++;throw Error('offline')},seed:{'鱼':{title:'鱼',html:'<table><tr><td><span>data-sort-value="200"</span><table><tr><td>200金</td></tr></table></td></tr></table>',sections:[],url:pageUrl('鱼'),fetchedAt:new Date().toISOString()}}});
+  const page=await service.page('鱼');assert.equal(page.cached,true);assert.equal(requests,0);
+  assert.doesNotMatch(page.html,/data-sort-value=/);assert.match(page.html,/200金/);
+});
+test('the real bundled fish article has no visible sorting code after sanitizing',()=>{
+  const seed=require('../data/seed.json');const html=sanitizeWiki(seed['鱼'].html);
+  assert.doesNotMatch(html,/<span[^>]*>\s*data-sort-value=/);
+  for(const text of ['河豚','太阳鱼','鲶鱼','200金','夏季'])assert.ok(html.includes(text),text+' remains readable');
+});
 test('failed online request returns cached article with explicit offline status',async t=>{
   const dir=await fs.mkdtemp(path.join(testRoot,'stardew-test-')); t.after(()=>fs.rm(dir,{recursive:true,force:true}));
   const service=new WikiService({cacheDir:dir,fetcher:async()=>{throw Error('offline')},index:[{title:'草莓'}],seed:{'草莓':{title:'草莓',html:'<p>官方缓存</p>',sections:[],url:pageUrl('草莓'),fetchedAt:'2026-10-09T00:00:00Z'}}});

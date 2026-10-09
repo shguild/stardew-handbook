@@ -1,6 +1,6 @@
 {
   "name": "stardew-handbook",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "星露谷手册 — 官方 Wiki 桌面查询工具",
   "author": "Stardew Handbook Contributors",
   "license": "MIT",
@@ -14,7 +14,9 @@
     "build": "electron-builder --win portable --x64",
     "build:dir": "electron-builder --win --dir --x64"
   },
-  "dependencies": { "sanitize-html": "2.18.0" },
+  "dependencies": {
+    "sanitize-html": "2.18.0"
+  },
   "devDependencies": {
     "electron": "44.7.0",
     "electron-builder": "26.15.3",
@@ -23,14 +25,32 @@
   "build": {
     "appId": "local.stardew.handbook",
     "productName": "星露谷手册",
-    "directories": { "output": "dist" },
-    "files": ["src/**/*", "assets/**/*", "data/**/*", "package.json", "LICENSE", "THIRD_PARTY_NOTICES.md"],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "data/**/*",
+      "package.json",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md"
+    ],
     "asar": true,
     "win": {
       "icon": "assets/app.ico",
-      "target": [{ "target": "portable", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "signAndEditExecutable": false
     },
-    "portable": { "artifactName": "Stardew-Handbook-${version}-Windows-x64.exe" }
+    "portable": {
+      "artifactName": "Stardew-Handbook-${version}-Windows-x64.exe"
+    }
   }
 }

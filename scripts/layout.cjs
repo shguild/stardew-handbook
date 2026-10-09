@@ -2,10 +2,11 @@ const {_electron:electron}=require('@playwright/test');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const root=path.join(__dirname,'..');
+const version=require('../package.json').version;
 (async()=>{
  const env={...process.env,HANDBOOK_TEST_DIR:path.join(root,'test-output','layout-user'),HANDBOOK_TEST_HIDDEN:'1'};delete env.ELECTRON_RUN_AS_NODE;
  const dev=process.argv.includes('--dev');const portable=process.argv.includes('--portable');
- const app=await electron.launch({executablePath:dev?require('electron'):path.join(root,'dist',portable?'Stardew-Handbook-1.0.0-Windows-x64.exe':'win-unpacked/星露谷手册.exe'),env,args:dev?[root]:[],timeout:30000});
+ const app=await electron.launch({executablePath:dev?require('electron'):path.join(root,'dist',portable?`Stardew-Handbook-${version}-Windows-x64.exe`:'win-unpacked/星露谷手册.exe'),env,args:dev?[root]:[],timeout:30000});
  try{
   const win=await app.firstWindow();await win.waitForSelector('.category-card');
   for(const [width,height] of [[1380,920],[980,720]]){

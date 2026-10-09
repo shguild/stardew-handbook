@@ -4,13 +4,15 @@ Windows 桌面查询工具，资料来自星露谷物语官方中文 Wiki，界�
 
 ## 运行
 
-双击 `dist/Stardew-Handbook-1.0.0-Windows-x64.exe`，无需安装 Node.js 或 Python。适用于 Windows 10/11 的 x64 电脑。
+双击 `dist/Stardew-Handbook-1.0.1-Windows-x64.exe`，无需安装 Node.js 或 Python。适用于 Windows 10/11 的 x64 电脑。
 
 首次解压启动可能需要数秒。该便携程序未进行商业代码签名，Windows 可能显示未知发布者提示。
 
 也可以使用 `dist/win-unpacked/星露谷手册.exe`；该目录中的运行时文件必须一起保留，不能只拷贝其中的 exe。
 
 ## 功能
+
+1.0.1 修复鱼类价格表中显示 `data-sort-value="…"` 的问题。已清理附带资料，读取旧缓存时也会自动移除排序辅助字段；无需清理缓存，收藏和阅读历史会保留。
 
 ![首页预览](docs/previews/home.png)
 
@@ -35,6 +37,7 @@ npm start
 npm test
 npm run test:ui
 node scripts/smoke.cjs --packaged
+node scripts/fish-smoke.cjs --packaged
 node scripts/portable-smoke.cjs
 npm run bootstrap
 npm run build

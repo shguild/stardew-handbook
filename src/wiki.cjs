@@ -33,7 +33,12 @@ function sanitizeWiki(html) {
       a:(tag,attrs)=>({tagName:tag,attribs:{...attrs,href:attrs.href?.startsWith('#') ? attrs.href : absolute(attrs.href || '')}}),
       img:(tag,attrs)=>({tagName:tag,attribs:{...attrs,src:absolute(attrs.src || ''),loading:'lazy'}})
     },
-    exclusiveFilter:frame=> (frame.tag==='img' && !frame.attribs.src) || (frame.tag==='span' && /mw-editsection/.test(frame.attribs.class || ''))
+    exclusiveFilter:frame=> (frame.tag==='img' && !frame.attribs.src) || (frame.tag==='span' && (
+      /mw-editsection/.test(frame.attribs.class || '') ||
+      // Price templates contain hidden sorting helpers. Their display:none style is
+      // deliberately stripped, so remove the helper itself, including in old caches.
+      /^\s*data-sort-value\s*=\s*(?:"[^"]*"|'[^']*'|[^\s<>]+)\s*$/i.test(frame.text)
+    ))
   });
 }
 class WikiService {

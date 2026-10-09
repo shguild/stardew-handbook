@@ -1451,5 +1451,9 @@
       "filename": "Chest.png",
       "url": "https://stardewvalleywiki.com/mediawiki/images/b/b3/Chest.png"
     }
-  ]
+  ],
+  "rendering": {
+    "version": "1.0.1",
+    "removedHiddenSortHelpers": 263
+  }
 }
