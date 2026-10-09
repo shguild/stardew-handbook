@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: wiki-image: https://stardewvalleywiki.com https://zh.stardewvalleywiki.com; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>星露谷手册</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="renderer.js"></script>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="window-title"><img src="../assets/mark.svg" alt="">星露谷手册 <span>· 山谷里的小百科</span></div>
+    <div class="window-controls"><button data-window="minimize" aria-label="最小化">―</button><button data-window="maximize" aria-label="最大化或还原">□</button><button data-window="close" aria-label="关闭" class="close-window">×</button></div>
+  </div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <button class="brand" data-view="home" aria-label="星露谷手册首页"><img src="../assets/mark.svg" alt=""><strong>星露谷手册</strong><span>STARDEW HANDBOOK</span></button>
+      <div class="nav-label">我的手册</div>
+      <nav id="primary-nav" aria-label="主导航">
+        <button data-view="home" class="nav-button active"><span class="nav-glyph">⌂</span>山谷首页</button>
+        <button data-view="favorites" class="nav-button"><span class="nav-glyph">☆</span>我的收藏<span id="favorite-count" class="nav-count">0</span></button>
+        <button data-view="recent" class="nav-button"><span class="nav-glyph">◷</span>最近翻阅</button>
+      </nav>
+      <div class="nav-label encyclopedia-label">百科图鉴<span>▾</span></div>
+      <nav id="category-nav" aria-label="百科分类"></nav>
+      <div class="sidebar-bottom"><button data-view="cache" class="nav-button"><span class="nav-glyph">▣</span>离线资料</button><button data-view="about" class="nav-button"><span class="nav-glyph">ⓘ</span>关于这本手册</button><div class="source-tag"><span class="status-dot"></span>资料源自官方 Wiki</div><small id="sidebar-version">本地桌面版</small></div>
+    </aside>
+    <main class="workspace">
+      <header class="toolbar">
+        <div class="trail"><button id="back-button" aria-label="后退" disabled>‹</button><button id="forward-button" aria-label="前进" disabled>›</button><span class="toolbar-divider"></span><span id="breadcrumb">山谷首页</span></div>
+        <form id="search-form" class="search-box" role="search"><span class="search-icon" aria-hidden="true"></span><input id="search-input" autocomplete="off" placeholder="搜索物品、村民、鱼类……" aria-label="搜索官方 Wiki" aria-controls="suggestions" aria-expanded="false"><kbd id="search-shortcut">Ctrl K</kbd><button type="submit" aria-label="搜索">↵</button><div id="suggestions" class="suggestions" hidden></div></form>
+        <button data-view="favorites" class="toolbar-bookmark" title="我的收藏" aria-label="我的收藏">☆</button>
+      </header>
+      <div id="view" class="view" tabindex="-1"></div>
+      <footer class="statusbar"><span id="status-text"><span class="status-dot"></span>正在打开手册……</span><span>官方 Wiki 资料 · 非官方查询工具<span class="status-separator">│</span><span id="index-count">中文百科</span></span></footer>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <dialog id="confirm-dialog"><form method="dialog"><div class="dialog-icon">▣</div><h2>清理下载的资料？</h2><p>下载的词条和图片将被清理。你的收藏、阅读历史和随程序附带的基础词条会保留。</p><div class="dialog-actions"><button value="cancel" class="paper-button">取消</button><button value="confirm" class="green-button">清理缓存</button></div></form></dialog>
+</body>
+</html>
