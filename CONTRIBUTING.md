@@ -2,6 +2,14 @@
 
 开发环境为 Node.js 24、Git 和 Windows 10/11 x64。克隆仓库后运行 `npm ci`、`npm test` 和 `npm start`。
 
+```powershell
+git clone https://github.com/shguild/stardew-handbook.git
+cd stardew-handbook
+npm ci
+npm test
+npm start
+```
+
 ## 项目目录
 
 | 目录 | 用途 |

@@ -5,6 +5,14 @@
   "author": "Stardew Handbook Contributors",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shguild/stardew-handbook.git"
+  },
+  "homepage": "https://github.com/shguild/stardew-handbook",
+  "bugs": {
+    "url": "https://github.com/shguild/stardew-handbook/issues"
+  },
   "main": "src/main.cjs",
   "scripts": {
     "start": "electron .",

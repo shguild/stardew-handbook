@@ -1,8 +1,10 @@
 # 星露谷手册
 
+[![Tests](https://github.com/shguild/stardew-handbook/actions/workflows/ci.yml/badge.svg)](https://github.com/shguild/stardew-handbook/actions/workflows/ci.yml)
+
 Windows 桌面查询工具，资料来自星露谷物语官方中文 Wiki，界面采用像素风山景、木质边框和羊皮纸面板。
 
-普通使用者请在本仓库的 **Releases** 页面下载安装包；克隆源码用于开发时，按下方开发步骤运行。更新流程和目录说明见 [开发与更新](CONTRIBUTING.md)，历史变化见 [更新记录](CHANGELOG.md)。
+普通使用者请在 [最新版本下载](https://github.com/shguild/stardew-handbook/releases/latest) 页面下载名称含 **Setup** 的安装 EXE；克隆源码用于开发时，按下方开发步骤运行。更新流程和目录说明见 [开发与更新](CONTRIBUTING.md)，历史变化见 [更新记录](CHANGELOG.md)。
 
 ## 运行
 
